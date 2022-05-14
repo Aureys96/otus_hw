@@ -18,19 +18,27 @@ func Unpack(s string) (string, error) {
 	rs := []rune(s)
 	var builder strings.Builder
 	for i, r := range rs {
-		if isLastRuneInString(i, rs) && unicode.IsDigit(r) {
+		switch {
+		case isLastRuneIsDigit(i, rs, r):
 			continue
-		} else if isLastRuneInString(i, rs) || !unicode.IsDigit(r) && !unicode.IsDigit(rs[i+1]) {
+		case isNoneRepeatableRune(i, rs, r):
 			builder.WriteRune(r)
-		} else {
+		default:
 			digit, _ := strconv.Atoi(string(rs[i+1]))
 			for j := 0; j < digit; j++ {
 				builder.WriteRune(r)
 			}
 		}
 	}
-
 	return builder.String(), nil
+}
+
+func isLastRuneIsDigit(i int, rs []rune, r rune) bool {
+	return isLastRuneInString(i, rs) && unicode.IsDigit(r)
+}
+
+func isNoneRepeatableRune(i int, rs []rune, r rune) bool {
+	return isLastRuneInString(i, rs) || !unicode.IsDigit(r) && !unicode.IsDigit(rs[i+1])
 }
 
 func isLastRuneInString(i int, rs []rune) bool {
