@@ -10,8 +10,7 @@ import (
 var ErrInvalidString = errors.New("invalid string")
 
 func Unpack(s string) (string, error) {
-	err := validate(s)
-	if err != nil {
+	if err := validate(s); err != nil {
 		return "", err
 	}
 
