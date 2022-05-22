@@ -7,7 +7,7 @@ import (
 )
 
 // Change to true if needed.
-var taskWithAsteriskIsCompleted = false
+var taskWithAsteriskIsCompleted = true
 
 var text = `Как видите, он  спускается  по  лестнице  вслед  за  своим
 	другом   Кристофером   Робином,   головой   вниз,  пересчитывая
@@ -45,6 +45,17 @@ var text = `Как видите, он  спускается  по  лестни�
 
 var lessThan10WordsText = `
 	Быть или не быть, вот в чем вопрос...
+`
+
+var equalFrequency = `
+	в а д з й я 
+	в а д з й я 
+	в а д з й я 
+	в а д з й я 
+	в а д з й я 
+	в а д з й я 
+	в а д з й я 
+	в а д з й я
 `
 
 func TestTop10(t *testing.T) {
@@ -86,15 +97,26 @@ func TestTop10(t *testing.T) {
 
 	t.Run("positive test with less than 10 words", func(t *testing.T) {
 		expected := []string{
-			"Быть",
-			"быть,",
+			"быть",
 			"в",
-			"вопрос...",
+			"вопрос",
 			"вот",
 			"или",
 			"не",
 			"чем",
 		}
 		require.Equal(t, expected, Top10(lessThan10WordsText))
+	})
+
+	t.Run("positive test with words with equal frequency", func(t *testing.T) {
+		expected := []string{
+			"а",
+			"в",
+			"д",
+			"з",
+			"й",
+			"я",
+		}
+		require.Equal(t, expected, Top10(equalFrequency))
 	})
 }

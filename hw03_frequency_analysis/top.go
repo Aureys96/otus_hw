@@ -1,14 +1,21 @@
 package hw03frequencyanalysis
 
 import (
+	"regexp"
 	"sort"
 	"strings"
 )
+
+var re = regexp.MustCompile("([.,/#!$%^&*;:{}=_~()])|(^-)+")
 
 func Top10(input string) []string {
 	splitStrings := strings.Fields(input)
 	freqMap := make(map[string]int)
 	for _, word := range splitStrings {
+		word = re.ReplaceAllString(strings.ToLower(word), "")
+		if word == "" {
+			continue
+		}
 		if _, ok := freqMap[word]; ok {
 			freqMap[word]++
 		} else {
