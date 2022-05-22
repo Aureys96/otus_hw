@@ -16,11 +16,7 @@ func Top10(input string) []string {
 		if word == "" {
 			continue
 		}
-		if _, ok := freqMap[word]; ok {
-			freqMap[word]++
-		} else {
-			freqMap[word] = 1
-		}
+		freqMap[word]++
 	}
 
 	tuples := make([]tuple, 0, len(freqMap))
@@ -41,7 +37,7 @@ func Top10(input string) []string {
 		return tuples[i].word < tuples[j].word
 	})
 
-	var answer []string
+	answer := make([]string, 0, 10)
 	for i, t := range tuples {
 		if i == 10 {
 			break
