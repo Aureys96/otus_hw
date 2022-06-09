@@ -14,26 +14,24 @@ func (l *lruCache) Set(key Key, value interface{}) bool {
 		k.Value = updatedCacheItem
 		l.queue.MoveToFront(l.items[key])
 		return ok
-	} else {
-		newCacheItem := NewCacheItem(key, value)
-		pushed := l.queue.PushFront(newCacheItem)
-		l.items[key] = pushed
-		if l.queue.Len() > l.capacity {
-			back := l.queue.Back()
-			l.queue.Remove(back)
-			delete(l.items, back.Value.(*cacheItem).key)
-		}
-		return ok
 	}
+	newCacheItem := newCacheItem(key, value)
+	pushed := l.queue.PushFront(newCacheItem)
+	l.items[key] = pushed
+	if l.queue.Len() > l.capacity {
+		back := l.queue.Back()
+		l.queue.Remove(back)
+		delete(l.items, back.Value.(*cacheItem).key)
+	}
+	return false
 }
 
 func (l *lruCache) Get(key Key) (interface{}, bool) {
 	if k, ok := l.items[key]; ok {
 		l.queue.MoveToFront(l.items[key])
 		return k.Value.(*cacheItem).value, true
-	} else {
-		return nil, false
 	}
+	return nil, false
 }
 
 func (l *lruCache) Clear() {
@@ -60,7 +58,7 @@ func NewCache(capacity int) Cache {
 	}
 }
 
-func NewCacheItem(key Key, value interface{}) *cacheItem {
+func newCacheItem(key Key, value interface{}) *cacheItem {
 	return &cacheItem{
 		key:   key,
 		value: value,

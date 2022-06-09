@@ -64,7 +64,6 @@ func TestList(t *testing.T) {
 		}
 
 		require.Equal(t, []int{300, 70}, elems)
-
 	})
 
 	t.Run("Remove from single-element list", func(t *testing.T) {
@@ -78,6 +77,5 @@ func TestList(t *testing.T) {
 
 		require.Nil(t, l.Front())
 		require.Nil(t, l.Back())
-
 	})
 }

@@ -71,7 +71,6 @@ func TestCache(t *testing.T) {
 		require.False(t, isInCache)
 		_, isInCache = c.Get("ccc")
 		require.False(t, isInCache)
-
 	})
 
 	t.Run("queue capacity exceeded test", func(t *testing.T) {
@@ -95,7 +94,6 @@ func TestCache(t *testing.T) {
 
 		_, isInCache = c.Get("aaa")
 		require.False(t, isInCache)
-
 	})
 
 	t.Run("least frequent key replaced", func(t *testing.T) {
@@ -132,7 +130,6 @@ func TestCache(t *testing.T) {
 		require.Equal(t, 500, val)
 		_, isInCache = c.Get("aaa")
 		require.False(t, isInCache)
-
 	})
 }
 
