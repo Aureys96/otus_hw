@@ -36,16 +36,17 @@ func (l *list) Back() *ListItem {
 
 func (l *list) PushFront(v interface{}) *ListItem {
 	temp := l.front
+	next := temp
 
 	switch i := v.(type) {
 	case *ListItem:
 		l.front = i
-		l.front.Next = temp
+		l.front.Next = next
 		l.front.Prev = nil
 	default:
 		l.front = &ListItem{
 			Value: v,
-			Next:  temp,
+			Next:  next,
 			Prev:  nil,
 		}
 	}
