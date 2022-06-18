@@ -50,7 +50,86 @@ func TestCache(t *testing.T) {
 	})
 
 	t.Run("purge logic", func(t *testing.T) {
-		// Write me
+		c := NewCache(3)
+
+		c.Set("aaa", 100)
+		c.Set("bbb", 200)
+		c.Set("ccc", 300)
+
+		_, isInCache := c.Get("aaa")
+		require.True(t, isInCache)
+		_, isInCache = c.Get("bbb")
+		require.True(t, isInCache)
+		_, isInCache = c.Get("ccc")
+		require.True(t, isInCache)
+
+		c.Clear()
+
+		_, isInCache = c.Get("aaa")
+		require.False(t, isInCache)
+		_, isInCache = c.Get("bbb")
+		require.False(t, isInCache)
+		_, isInCache = c.Get("ccc")
+		require.False(t, isInCache)
+	})
+
+	t.Run("queue capacity exceeded test", func(t *testing.T) {
+		c := NewCache(3)
+
+		wasInCache := c.Set("aaa", 100)
+		require.False(t, wasInCache)
+		wasInCache = c.Set("bbb", 200)
+		require.False(t, wasInCache)
+		wasInCache = c.Set("ccc", 300)
+		require.False(t, wasInCache)
+		wasInCache = c.Set("ddd", 400)
+		require.False(t, wasInCache)
+
+		_, isInCache := c.Get("ccc")
+		require.True(t, isInCache)
+		_, isInCache = c.Get("bbb")
+		require.True(t, isInCache)
+		_, isInCache = c.Get("ddd")
+		require.True(t, isInCache)
+
+		_, isInCache = c.Get("aaa")
+		require.False(t, isInCache)
+	})
+
+	t.Run("least frequent key replaced", func(t *testing.T) {
+		c := NewCache(4)
+
+		wasInCache := c.Set("aaa", 100)
+		require.False(t, wasInCache)
+		wasInCache = c.Set("bbb", 200)
+		require.False(t, wasInCache)
+		wasInCache = c.Set("ccc", 300)
+		require.False(t, wasInCache)
+		wasInCache = c.Set("ddd", 400)
+		require.False(t, wasInCache)
+
+		_, isInCache := c.Get("ccc")
+		require.True(t, isInCache)
+		wasInCache = c.Set("bbb", 201)
+		require.True(t, wasInCache)
+		val, isInCache := c.Get("bbb")
+		require.True(t, isInCache)
+		require.Equal(t, 201, val)
+		_, isInCache = c.Get("ddd")
+		require.True(t, isInCache)
+		wasInCache = c.Set("bbb", 202)
+		require.True(t, wasInCache)
+		val, isInCache = c.Get("bbb")
+		require.True(t, isInCache)
+		require.Equal(t, 202, val)
+		wasInCache = c.Set("eee", 500)
+		require.False(t, wasInCache)
+
+		val, isInCache = c.Get("eee")
+		require.True(t, isInCache)
+		require.Equal(t, 500, val)
+		_, isInCache = c.Get("aaa")
+		require.False(t, isInCache)
 	})
 }
 
