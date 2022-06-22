@@ -17,7 +17,7 @@ func Run(tasks []Task, n, m int) error {
 	maxErrors := uint32(m)
 
 	var wg sync.WaitGroup
-	var errorCount uint32 = 0
+	var errorCount uint32
 	i := 0
 
 	for tasksToGo > 0 {
