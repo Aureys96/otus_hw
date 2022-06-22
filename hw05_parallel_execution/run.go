@@ -25,7 +25,7 @@ func Run(tasks []Task, n, m int) error {
 			return ErrErrorsLimitExceeded
 		}
 
-		if availableGoroutines > 0 {
+		if atomic.LoadUint32(&availableGoroutines) > 0 {
 			if i > len(tasks)-1 {
 				break
 			}
