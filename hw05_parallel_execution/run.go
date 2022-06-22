@@ -20,7 +20,7 @@ func Run(tasks []Task, n, m int) error {
 	var errorCount uint32
 	i := 0
 
-	for tasksToGo > 0 {
+	for atomic.LoadUint32(&tasksToGo) > 0 {
 		if maxErrors > 0 && errorCount >= maxErrors {
 			return ErrErrorsLimitExceeded
 		}
