@@ -21,7 +21,8 @@ func Run(tasks []Task, n, m int) error {
 	i := 0
 
 	for atomic.LoadUint32(&tasksToGo) > 0 {
-		if maxErrors > 0 && errorCount >= maxErrors {
+		if maxErrors > 0 && atomic.LoadUint32(&errorCount) >= maxErrors {
+			wg.Wait()
 			return ErrErrorsLimitExceeded
 		}
 
@@ -33,15 +34,15 @@ func Run(tasks []Task, n, m int) error {
 			i++
 			atomic.AddUint32(&availableGoroutines, ^uint32(0))
 			wg.Add(1)
-			go func() {
+			go func(task Task) {
 				defer wg.Done()
-				err := nextTask()
+				err := task()
 				if err != nil {
 					atomic.AddUint32(&errorCount, 1)
 				}
 				atomic.AddUint32(&tasksToGo, ^uint32(0))
 				atomic.AddUint32(&availableGoroutines, 1)
-			}()
+			}(nextTask)
 		}
 	}
 
