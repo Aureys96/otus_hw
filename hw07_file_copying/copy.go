@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"errors"
+	"github.com/cheggaaa/pb/v3"
 	"io"
 	"os"
 )
@@ -38,14 +39,22 @@ func Copy(fromPath, toPath string, offset, limit int64) error {
 	}
 	defer dest.Close()
 
-	if limit > 0 {
-		_, err = io.CopyN(dest, reader, limit)
-	} else {
-		_, err = io.Copy(dest, reader)
+	var bar *pb.ProgressBar
+	stat, _ := file.Stat()
+	sizeToCopy := stat.Size()
+
+	if limit > 0 && sizeToCopy > limit {
+		sizeToCopy = limit
 	}
+
+	bar = pb.Full.Start64(sizeToCopy)
+	barReader := bar.NewProxyReader(reader)
+	_, err = io.CopyN(dest, barReader, sizeToCopy)
+
 	if err != nil && err != io.EOF {
 		return err
 	}
+	bar.Finish()
 
 	return nil
 }
