@@ -3,9 +3,10 @@ package main
 import (
 	"bufio"
 	"errors"
-	"github.com/cheggaaa/pb/v3"
 	"io"
 	"os"
+
+	"github.com/cheggaaa/pb/v3"
 )
 
 var (
@@ -16,14 +17,13 @@ var (
 )
 
 func Copy(fromPath, toPath string, offset, limit int64) error {
-
 	file, err := readFile(fromPath)
 	if err != nil {
 		return err
 	}
 	defer file.Close()
 
-	err = validateOffset(err, file, offset)
+	err = validateOffset(file, offset)
 	if err != nil {
 		return err
 	}
@@ -51,7 +51,7 @@ func Copy(fromPath, toPath string, offset, limit int64) error {
 	barReader := bar.NewProxyReader(reader)
 	_, err = io.CopyN(dest, barReader, sizeToCopy)
 
-	if err != nil && err != io.EOF {
+	if err != nil && !errors.Is(err, io.EOF) {
 		return err
 	}
 	bar.Finish()
@@ -63,8 +63,7 @@ func setOffset(offset int64, file *os.File) error {
 	if offset < 0 {
 		return nil
 	}
-	_, err := file.Seek(offset, 0)
-	if err != nil {
+	if _, err := file.Seek(offset, 0); err != nil {
 		return ErrFileSeeking
 	}
 	return nil
@@ -82,7 +81,7 @@ func readFile(fromPath string) (*os.File, error) {
 	return file, nil
 }
 
-func validateOffset(err error, file *os.File, offset int64) error {
+func validateOffset(file *os.File, offset int64) error {
 	stat, err := file.Stat()
 	if err != nil {
 		return err
