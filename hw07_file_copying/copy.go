@@ -3,7 +3,6 @@ package main
 import (
 	"bufio"
 	"errors"
-	"fmt"
 	"io"
 	"os"
 )
@@ -17,75 +16,38 @@ var (
 
 func Copy(fromPath, toPath string, offset, limit int64) error {
 
-	file, stat, err := readFile(fromPath, offset)
+	file, err := readFile(fromPath)
+	if err != nil {
+		return err
+	}
 	defer file.Close()
 
+	err = validateOffset(err, file, offset)
+	if err != nil {
+		return err
+	}
 	err = setOffset(offset, file)
 	if err != nil {
 		return err
 	}
 
-	r := bufio.NewReader(file)
-	tempBuf := make([]byte, 3)
-	totalBuf := make([]byte, 0, getTotalBuffer(limit, stat, offset))
-
-	totalBuf, err = readOriginalFile(r, tempBuf, totalBuf, limit)
-	if err != nil {
-		return err
-	}
-
+	reader := bufio.NewReader(file)
 	dest, err := os.Create(toPath)
 	if err != nil {
 		return err
 	}
 	defer dest.Close()
 
-	if limit != 0 {
-		_, err = io.CopyN(dest, bufReader{&totalBuf}, limit)
+	if limit > 0 {
+		_, err = io.CopyN(dest, reader, limit)
 	} else {
-		_, err = io.Copy(dest, bufReader{&totalBuf})
+		_, err = io.Copy(dest, reader)
 	}
-	if err != nil {
+	if err != nil && err != io.EOF {
 		return err
 	}
 
 	return nil
-}
-
-func readOriginalFile(r *bufio.Reader, tempBuf []byte, totalBuf []byte, limit int64) ([]byte, error) {
-	totalRead := 0
-	for {
-		read, err := r.Read(tempBuf)
-		if err == io.EOF {
-			fmt.Println("Reached EOF")
-			break
-		}
-		if err != nil {
-			fmt.Println("Error while reading file")
-			return nil, err
-		}
-
-		totalBuf = append(totalBuf, tempBuf...)
-
-		totalRead += read
-		if limit != 0 {
-			if totalRead > int(limit) {
-				fmt.Println("Reached the limit")
-				break
-			}
-		}
-	}
-	return totalBuf, nil
-}
-
-func getTotalBuffer(limit int64, stat os.FileInfo, offset int64) int64 {
-	var totalBufSize int64
-	if limit > 0 && limit < stat.Size() {
-		totalBufSize = limit - offset
-	} else {
-		totalBufSize = stat.Size()
-	}
-	return totalBufSize
 }
 
 func setOffset(offset int64, file *os.File) error {
@@ -99,37 +61,26 @@ func setOffset(offset int64, file *os.File) error {
 	return nil
 }
 
-func readFile(fromPath string, offset int64) (*os.File, os.FileInfo, error) {
+func readFile(fromPath string) (*os.File, error) {
 	file, err := os.Open(fromPath)
 	if err != nil {
 		if os.IsNotExist(err) {
-			return nil, nil, ErrFileDoesntExist
+			return nil, ErrFileDoesntExist
 		}
-		return nil, nil, ErrUnsupportedFile
+		return nil, ErrUnsupportedFile
 	}
 
-	stat, err := validateOffset(err, file, offset)
-
-	return file, stat, nil
+	return file, nil
 }
 
-func validateOffset(err error, file *os.File, offset int64) (os.FileInfo, error) {
+func validateOffset(err error, file *os.File, offset int64) error {
 	stat, err := file.Stat()
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	if offset > stat.Size() {
-		return nil, ErrOffsetExceedsFileSize
+		return ErrOffsetExceedsFileSize
 	}
-	return stat, nil
-}
-
-type bufReader struct {
-	payload *[]byte
-}
-
-func (b bufReader) Read(p []byte) (n int, err error) {
-	l := copy(p, *b.payload)
-	return l, io.EOF
+	return nil
 }
