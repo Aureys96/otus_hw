@@ -27,10 +27,10 @@ func TestRunCmd(t *testing.T) {
 		returnCode := RunCmd(cmd, env)
 		require.Equal(t, 0, returnCode)
 	})
-	t.Run("return code -1", func(t *testing.T) {
+	t.Run("return code not equal 0", func(t *testing.T) {
 		cmd := []string{"cat", "text_2.txt"}
 		env := Environment{}
 		returnCode := RunCmd(cmd, env)
-		require.Equal(t, -1, returnCode)
+		require.NotEqual(t, 0, returnCode)
 	})
 }
