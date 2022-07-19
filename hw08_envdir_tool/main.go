@@ -5,7 +5,6 @@ import (
 	"os"
 )
 
-//go-envdir /path/to/env/dir command arg1 arg2
 func main() {
 	if len(os.Args) < 3 {
 		log.Fatalln("Should be at least two args")

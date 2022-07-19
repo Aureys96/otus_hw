@@ -1,8 +1,10 @@
 package main
 
 import (
+	"bufio"
 	"bytes"
 	"errors"
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -32,45 +34,61 @@ func ReadDir(dir string) (Environment, error) {
 
 	env := make(Environment)
 	for _, file := range files {
-		if key, value, err := extractValue(dir, file); err != nil {
+		key, value, err := extractValue(dir, file)
+		if err != nil {
 			return nil, err
-		} else {
-			if value == "" {
-				env[key] = EnvValue{value, true}
-			} else {
-				env[key] = EnvValue{value, false}
-			}
 		}
+		env[key] = *value
 	}
 
 	return env, nil
 }
 
-func extractValue(dir string, file os.DirEntry) (string, string, error) {
+func extractValue(dir string, file os.DirEntry) (string, *EnvValue, error) {
 	key := file.Name()
 	if strings.Contains(key, "=") {
-		return "", "", ErrWrongFileName
+		return "", nil, ErrWrongFileName
 	}
 
 	filename := filepath.Join(dir, key)
-	value, err := parseFile(filename)
+	value, isEmpty, err := parseFile(filename)
 	if err != nil {
-		return "", "", err
+		return "", nil, err
+	}
+	if isEmpty {
+		return key, &EnvValue{value, true}, nil
 	}
 
-	return key, value, nil
+	return key, &EnvValue{value, false}, nil
 }
 
-func parseFile(filename string) (string, error) {
-	content, err := os.ReadFile(filename)
+func parseFile(filename string) (string, bool, error) {
+	file, err := os.Open(filename)
 	if err != nil {
-		return "", ErrCannotReadFile
+		return "", false, ErrCannotReadFile
+	}
+	defer file.Close()
+
+	stat, err := file.Stat()
+	if err != nil {
+		return "", false, err
+	}
+	if stat.Size() == 0 {
+		return "", true, nil
 	}
 
-	if len(content) == 0 {
-		return "", nil
-	}
+	reader := bufio.NewReader(file)
 
-	content = bytes.ReplaceAll(content, []byte("\x00"), []byte("\n"))
-	return string(content), nil
+	line, _, err := reader.ReadLine()
+	if err != nil {
+		if errors.Is(err, io.EOF) {
+			return "", false, nil
+		}
+		return "", false, err
+	}
+	line = bytes.ReplaceAll(line, []byte("\x00"), []byte("\n"))
+	result := string(line)
+	result = strings.TrimRight(result, "	")
+	result = strings.TrimRight(result, " ")
+	return result, false, nil
 }
