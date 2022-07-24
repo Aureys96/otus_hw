@@ -58,7 +58,6 @@ func (v ValidationErrors) Error() string {
 }
 
 func Validate(v interface{}) (resultErr error) {
-
 	defer func() {
 		if err := recover(); err != nil {
 			log.Println("panic occurred:", err)
@@ -110,7 +109,8 @@ func Validate(v interface{}) (resultErr error) {
 }
 
 func handleSlices(fieldValue reflect.Value, tags []string, fieldValueType reflect.StructField,
-	validationErrors ValidationErrors) ValidationErrors {
+	validationErrors ValidationErrors,
+) ValidationErrors {
 	var validationError ValidationError
 	switch fieldValue.Type().String() {
 	case "[]string":
