@@ -66,10 +66,9 @@ func Validate(v interface{}) (resultErr error) {
 	}()
 
 	value := reflect.ValueOf(v)
-	valueKind := value.Kind()
 	valueType := value.Type()
 
-	if valueKind != reflect.Struct {
+	if value.Kind() != reflect.Struct {
 		return ProgrammaticError{errWrongType}
 	}
 
@@ -168,7 +167,7 @@ func validateString(tags []string, field string, value string) ValidationError {
 
 func validateStringSet(t []string, value string) error {
 	strs := strings.Split(t[1], ",")
-	set := make(Set, 0)
+	set := make(Set)
 	for _, str := range strs {
 		set.add(str)
 	}
@@ -254,7 +253,7 @@ func validateIntegerMinMax(value int64, thresholdValue string, isMax bool) error
 
 func validateIntSet(t string, value int64) error {
 	strs := strings.Split(t, ",")
-	set := make(Set, 0)
+	set := make(Set)
 	for _, str := range strs {
 		setValue, err := strconv.Atoi(str)
 		if err != nil {
