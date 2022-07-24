@@ -122,10 +122,8 @@ func TestValidate(t *testing.T) {
 			},
 		},
 		{
-			in: 50001000,
-			expectedErr: ValidationErrors{ValidationError{
-				Err: errWrongType,
-			}},
+			in:          50001000,
+			expectedErr: ProgrammaticError{errWrongType},
 		},
 	}
 

@@ -2,6 +2,7 @@ package hw09structvalidator
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"reflect"
 	"regexp"
@@ -17,6 +18,22 @@ var (
 	errInvalidMinIntValue      = errors.New("int value is less than min")
 	errInvalidMaxIntValue      = errors.New("int value is greater than max")
 )
+
+type ProgrammaticError struct {
+	root interface{}
+}
+
+func (err ProgrammaticError) Error() string {
+	root := err.root
+	switch v := root.(type) {
+	case error:
+		return fmt.Sprintf("Received programmatic error: %v\n", v.Error())
+	case string:
+		return fmt.Sprintf("Received programmatic error: %v\n", v)
+	default:
+		return "Received unexpected exception"
+	}
+}
 
 type ValidationError struct {
 	Field string
@@ -40,15 +57,21 @@ func (v ValidationErrors) Error() string {
 	return builder.String()
 }
 
-func Validate(v interface{}) error {
+func Validate(v interface{}) (resultErr error) {
+
+	defer func() {
+		if err := recover(); err != nil {
+			log.Println("panic occurred:", err)
+			resultErr = ProgrammaticError{root: err}
+		}
+	}()
+
 	value := reflect.ValueOf(v)
 	valueKind := value.Kind()
 	valueType := value.Type()
 
 	if valueKind != reflect.Struct {
-		return ValidationErrors{ValidationError{
-			Err: errWrongType,
-		}}
+		return ProgrammaticError{errWrongType}
 	}
 
 	validationErrors := make(ValidationErrors, 0)
@@ -81,9 +104,9 @@ func Validate(v interface{}) error {
 		}
 	}
 	if len(validationErrors) > 0 {
-		return validationErrors
+		resultErr = validationErrors
 	}
-	return nil
+	return resultErr
 }
 
 func handleSlices(fieldValue reflect.Value, tags []string, fieldValueType reflect.StructField,
@@ -137,7 +160,7 @@ func validateString(tags []string, field string, value string) ValidationError {
 				}
 			}
 		default:
-			log.Fatalln("Received unknown validation token")
+			log.Panicln("Received unknown validation token")
 		}
 	}
 	return ValidationError{}
@@ -158,7 +181,7 @@ func validateStringSet(t []string, value string) error {
 func validateStringPattern(t []string, value string) error {
 	rg, err := regexp.Compile(t[1])
 	if err != nil {
-		log.Fatalf("Provided regexp is invalid: %v\n", t[1])
+		log.Panicf("Provided regexp is invalid: %v\n", t[1])
 	}
 	if matched := rg.MatchString(value); !matched {
 		return errStringDoesntMatchRegexp
@@ -169,7 +192,7 @@ func validateStringPattern(t []string, value string) error {
 func validateStringLength(value string, sLength string) error {
 	length, err := strconv.Atoi(sLength)
 	if err != nil {
-		log.Fatalln("Couldn't convert string length to integer")
+		log.Panicln("Couldn't convert string length to integer")
 	}
 
 	if len(value) != length {
@@ -206,7 +229,7 @@ func validateInteger(tags []string, field string, value int64) ValidationError {
 				}
 			}
 		default:
-			log.Fatalln("Received unknown validation token")
+			log.Panicln("Received unknown validation token")
 		}
 	}
 	return ValidationError{}
@@ -215,7 +238,7 @@ func validateInteger(tags []string, field string, value int64) ValidationError {
 func validateIntegerMinMax(value int64, thresholdValue string, isMax bool) error {
 	cond, err := strconv.Atoi(thresholdValue)
 	if err != nil {
-		log.Fatalf("Couldn't convert threshold validation value to int: %v\n", thresholdValue)
+		log.Panicf("Couldn't convert threshold validation value to int: %v\n", thresholdValue)
 	}
 	if isMax {
 		if int(value) > cond {
@@ -235,7 +258,7 @@ func validateIntSet(t string, value int64) error {
 	for _, str := range strs {
 		setValue, err := strconv.Atoi(str)
 		if err != nil {
-			log.Fatalf("Couldn't convert set value to int: %v\n", setValue)
+			log.Panicf("Couldn't convert set value to int: %v\n", setValue)
 		}
 		set.add(int64(setValue))
 	}
