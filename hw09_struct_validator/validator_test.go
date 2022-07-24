@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 type UserRole string
@@ -42,18 +44,95 @@ func TestValidate(t *testing.T) {
 		expectedErr error
 	}{
 		{
-			// Place your code here.
+			in: User{
+				ID:     "ValidID36ValidID36ValidID36ValidID36",
+				Name:   "whateverName",
+				Age:    27,
+				Email:  "valid@email.com",
+				Role:   "admin",
+				Phones: []string{"12345678910"},
+				meta:   nil,
+			},
 		},
-		// ...
-		// Place your code here.
+		{
+			in: User{
+				ID:     "notValidId",
+				Name:   "whateverName",
+				Age:    12,
+				Email:  "invalid@email@email",
+				Role:   "notAdmin",
+				Phones: []string{"1222", "22225"},
+				meta:   nil,
+			},
+			expectedErr: ValidationErrors{
+				ValidationError{
+					Field: "ID",
+					Err:   errStringWrongLength,
+				},
+				ValidationError{
+					Field: "Age",
+					Err:   errInvalidMinIntValue,
+				},
+				ValidationError{
+					Field: "Email",
+					Err:   errStringDoesntMatchRegexp,
+				},
+				ValidationError{
+					Field: "Role",
+					Err:   errUnexpectedValue,
+				},
+				ValidationError{
+					Field: "Phones",
+					Err:   errStringWrongLength,
+				},
+				ValidationError{
+					Field: "Phones",
+					Err:   errStringWrongLength,
+				},
+			},
+		},
+		{
+			in: App{Version: "V01_invalid_00x001"},
+			expectedErr: ValidationErrors{ValidationError{
+				Field: "Version",
+				Err:   errStringWrongLength,
+			}},
+		},
+		{
+			in: Token{
+				Header:    []byte{123, 123, 123},
+				Payload:   []byte{123, 123, 123},
+				Signature: []byte{123, 123, 123},
+			},
+		},
+		{
+			in: Response{
+				Code: 204,
+				Body: "body",
+			},
+			expectedErr: ValidationErrors{ValidationError{
+				Field: "Code",
+				Err:   errUnexpectedValue,
+			}},
+		},
+		{
+			in: Response{
+				Code: 200,
+				Body: "body",
+			},
+		},
+		{
+			in:          50001000,
+			expectedErr: ProgrammaticError{errWrongType},
+		},
 	}
 
 	for i, tt := range tests {
 		t.Run(fmt.Sprintf("case %d", i), func(t *testing.T) {
 			tt := tt
 			t.Parallel()
-
-			// Place your code here.
+			err := Validate(tt.in)
+			assert.Equal(t, tt.expectedErr, err)
 			_ = tt
 		})
 	}
