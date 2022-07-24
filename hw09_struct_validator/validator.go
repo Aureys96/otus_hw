@@ -63,7 +63,7 @@ func Validate(v interface{}) error {
 		tags := strings.Split(strTags, "|")
 
 		var validationError ValidationError
-		switch fieldValue.Kind() {
+		switch fieldValue.Kind() { //nolint:exhaustive
 		case reflect.String:
 			log.Println("received a string")
 			if validationError = validateString(tags, fieldValueType.Name, fieldValue.String()); validationError.hasError() {
@@ -75,22 +75,7 @@ func Validate(v interface{}) error {
 				validationErrors = append(validationErrors, validationError)
 			}
 		case reflect.Slice:
-			switch fieldValue.Type().String() {
-			case "[]string":
-				log.Println("received a string slice")
-				for i := 0; i < fieldValue.Len(); i++ {
-					if validationError = validateString(tags, fieldValueType.Name, fieldValue.Index(i).String()); validationError.hasError() {
-						validationErrors = append(validationErrors, validationError)
-					}
-				}
-			case "[]int", "[]int8", "[]int16", "[]in32", "[]int64":
-				log.Println("received an int slice")
-				for i := 0; i < fieldValue.Len(); i++ {
-					if validationError = validateInteger(tags, fieldValueType.Name, fieldValue.Index(i).Int()); validationError.hasError() {
-						validationErrors = append(validationErrors, validationError)
-					}
-				}
-			}
+			validationErrors = handleSlices(fieldValue, tags, fieldValueType, validationErrors)
 		default:
 			log.Printf("received unsupported type: %v\n", fieldValue.Type().String())
 		}
@@ -99,6 +84,30 @@ func Validate(v interface{}) error {
 		return validationErrors
 	}
 	return nil
+}
+
+func handleSlices(fieldValue reflect.Value, tags []string, fieldValueType reflect.StructField,
+	validationErrors ValidationErrors) ValidationErrors {
+	var validationError ValidationError
+	switch fieldValue.Type().String() {
+	case "[]string":
+		log.Println("received a string slice")
+		for i := 0; i < fieldValue.Len(); i++ {
+			validationError = validateString(tags, fieldValueType.Name, fieldValue.Index(i).String())
+			if validationError.hasError() {
+				validationErrors = append(validationErrors, validationError)
+			}
+		}
+	case "[]int", "[]int8", "[]int16", "[]in32", "[]int64":
+		log.Println("received an int slice")
+		for i := 0; i < fieldValue.Len(); i++ {
+			validationError = validateInteger(tags, fieldValueType.Name, fieldValue.Index(i).Int())
+			if validationError.hasError() {
+				validationErrors = append(validationErrors, validationError)
+			}
+		}
+	}
+	return validationErrors
 }
 
 func validateString(tags []string, field string, value string) ValidationError {
