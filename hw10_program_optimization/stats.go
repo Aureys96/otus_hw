@@ -2,12 +2,17 @@ package hw10programoptimization
 
 import (
 	"bufio"
-	jsoniter "github.com/json-iterator/go"
+	"errors"
 	"io"
 	"strings"
+
+	jsonIterator "github.com/json-iterator/go"
 )
 
-var json = jsoniter.ConfigCompatibleWithStandardLibrary
+var (
+	json             = jsonIterator.ConfigCompatibleWithStandardLibrary
+	ErrUnmarshalling = errors.New("error while unmarshalling data")
+)
 
 type User struct {
 	ID       int
@@ -28,11 +33,11 @@ func GetDomainStat(r io.Reader, domain string) (DomainStat, error) {
 	user := User{}
 	for scanner.Scan() {
 		if err := json.Unmarshal(scanner.Bytes(), &user); err != nil {
-			return nil, err
+			return nil, ErrUnmarshalling
 		}
 		if strings.Contains(user.Email, "."+domain) {
 			key := strings.ToLower(strings.SplitN(user.Email, "@", 2)[1])
-			result[key] = result[key] + 1
+			result[key]++
 		}
 	}
 

@@ -2,7 +2,6 @@ package hw10programoptimization
 
 import (
 	"archive/zip"
-
 	"log"
 	"testing"
 )
@@ -14,6 +13,9 @@ func BenchmarkGetDomainStat(b *testing.B) {
 	}
 
 	data, err := reader.File[0].Open()
+	if err != nil {
+		log.Fatalln(err)
+	}
 	defer reader.Close()
 
 	b.ResetTimer()
