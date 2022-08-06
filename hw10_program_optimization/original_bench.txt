@@ -1,0 +1,11 @@
+goos: linux
+goarch: amd64
+pkg: github.com/Aureys96/hw10_program_optimization
+cpu: Intel(R) Core(TM) i7-7700 CPU @ 3.60GHz
+BenchmarkGetDomainStat-8   	    1063	   5906338 ns/op	  304016 B/op	    2966 allocs/op
+BenchmarkGetDomainStat-8   	     968	   5557347 ns/op	  333802 B/op	    3256 allocs/op
+BenchmarkGetDomainStat-8   	    1072	   5198978 ns/op	  301435 B/op	    2941 allocs/op
+BenchmarkGetDomainStat-8   	    1064	   5215329 ns/op	  303695 B/op	    2963 allocs/op
+BenchmarkGetDomainStat-8   	    1069	   5826187 ns/op	  302314 B/op	    2949 allocs/op
+PASS
+ok  	github.com/Aureys96/hw10_program_optimization	58.580s
