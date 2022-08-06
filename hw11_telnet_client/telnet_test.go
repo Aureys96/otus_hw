@@ -68,8 +68,7 @@ func TestTelnetClient(t *testing.T) {
 		out := &bytes.Buffer{}
 		client := NewTelnetClient("127.0.0.1:19646", 10*time.Second, ioutil.NopCloser(in), out)
 		require.EqualError(t, client.Connect(),
-			`connection failed: dial tcp 127.0.0.1:19646: connectex: 
-						No connection could be made because the target machine actively refused it.`)
+			"connection failed: dial tcp 127.0.0.1:19646: connect: connection refused")
 	})
 	t.Run("error when server is already stopped", func(t *testing.T) {
 		l, err := net.Listen("tcp", "127.0.0.1:")
