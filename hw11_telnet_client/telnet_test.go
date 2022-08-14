@@ -62,4 +62,26 @@ func TestTelnetClient(t *testing.T) {
 
 		wg.Wait()
 	})
+
+	t.Run("error when try to connect to unavailable server", func(t *testing.T) {
+		in := &bytes.Buffer{}
+		out := &bytes.Buffer{}
+		client := NewTelnetClient("127.0.0.1:19646", 10*time.Second, ioutil.NopCloser(in), out)
+		require.EqualError(t, client.Connect(),
+			"connection failed: dial tcp 127.0.0.1:19646: connect: connection refused")
+	})
+	t.Run("error when server is already stopped", func(t *testing.T) {
+		l, err := net.Listen("tcp", "127.0.0.1:")
+		require.NoError(t, err)
+
+		in := &bytes.Buffer{}
+		out := &bytes.Buffer{}
+		client := NewTelnetClient(l.Addr().String(), 10*time.Second, ioutil.NopCloser(in), out)
+		require.NoError(t, client.Connect())
+
+		require.NoError(t, l.Close())
+
+		in.WriteString("test\n")
+		require.Error(t, client.Send())
+	})
 }
