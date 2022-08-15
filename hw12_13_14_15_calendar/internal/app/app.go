@@ -2,18 +2,16 @@ package app
 
 import (
 	"context"
+	"go.uber.org/zap"
 )
 
 type App struct { // TODO
 }
 
-type Logger interface { // TODO
-}
-
 type Storage interface { // TODO
 }
 
-func New(logger Logger, storage Storage) *App {
+func New(logger *zap.Logger, storage Storage) *App {
 	return &App{}
 }
 
