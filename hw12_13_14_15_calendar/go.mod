@@ -4,4 +4,7 @@ go 1.16
 
 require github.com/knadh/koanf v1.4.2
 
-require go.uber.org/zap v1.15.0
+require (
+	github.com/justinas/alice v1.2.0
+	go.uber.org/zap v1.15.0
+)

@@ -6,7 +6,7 @@ import (
 )
 
 func New(appConfig *config.Config) *zap.Logger {
-	//var cfg zap.Config
+	//var cfg zap.ServerConfig //TODO add more profiles
 	cfg := zap.NewDevelopmentConfig()
 
 	al := zap.NewAtomicLevel()

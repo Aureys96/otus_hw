@@ -1,8 +1,10 @@
 package config
 
 import (
+	"github.com/Aureys96/hw12_13_14_15_calendar/internal/server/config"
 	"github.com/knadh/koanf"
 	"github.com/knadh/koanf/parsers/toml"
+	"github.com/knadh/koanf/providers/confmap"
 	"github.com/knadh/koanf/providers/file"
 )
 
@@ -11,6 +13,7 @@ import (
 // при их конструировании только необходимые параметры, а также уменьшает вероятность циклической зависимости.
 type Config struct {
 	Logger LoggerConf
+	Server config.ServerConfig `koanf:"server"`
 	// TODO
 }
 
@@ -23,6 +26,12 @@ type LoggerConf struct {
 
 func NewConfig(configPath string) (*Config, error) {
 	k := koanf.New(".")
+
+	k.Load(confmap.Provider(map[string]interface{}{
+		"server.host":         "localhost",
+		"server.port":         "8080",
+		"server.shutdownTime": "5",
+	}, "."), nil)
 	if err := k.Load(file.Provider(configPath), toml.Parser()); err != nil {
 		return nil, err
 	}
