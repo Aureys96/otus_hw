@@ -1,7 +1,7 @@
 package storage
 
 type Event struct {
-	ID    string
+	ID    int
 	Title string
 	// TODO
 }

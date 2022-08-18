@@ -6,12 +6,12 @@ import (
 )
 
 type IStorage interface {
-	Events() IEventStorage
+	DAO() EventDao
 	Connect(ctx context.Context) error
 	Close() error
 }
 
-type IEventStorage interface {
+type EventDao interface {
 	CreateEvent(ctx context.Context, event Event) (Event, error)
 	Get(ctx context.Context, id int) (Event, error)
 	Update(ctx context.Context, id int, event Event) error

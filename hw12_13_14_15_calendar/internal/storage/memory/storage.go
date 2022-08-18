@@ -7,27 +7,26 @@ import (
 )
 
 type Storage struct {
-	// TODO
-	mu sync.RWMutex
+	mu   sync.RWMutex
+	data map[int]storage.Event
+	dao  storage.EventDao
 }
 
-func (s Storage) Events() storage.IEventStorage {
-	//TODO implement me
-	panic("implement me")
+func (s *Storage) Connect(_ context.Context) error {
+	panic("unsupported")
 }
 
-func (s Storage) Connect(ctx context.Context) error {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (s Storage) Close() error {
-	//TODO implement me
-	panic("implement me")
+func (s *Storage) Close() error {
+	panic("unsupported")
 }
 
 func New() *Storage {
-	return &Storage{}
+	return &Storage{data: make(map[int]storage.Event)}
 }
 
-// TODO
+func (s *Storage) DAO() storage.EventDao {
+	if s.dao == nil {
+		s.dao = newEventDAO(s)
+	}
+	return s.dao
+}
