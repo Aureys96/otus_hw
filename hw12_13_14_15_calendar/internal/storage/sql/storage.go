@@ -1,20 +1,31 @@
 package sqlstorage
 
-import "context"
+import (
+	"context"
+	"github.com/Aureys96/hw12_13_14_15_calendar/internal/storage"
+	"github.com/Aureys96/hw12_13_14_15_calendar/internal/storage/config"
+	_ "github.com/jackc/pgx/v4/stdlib" //nolint:golint
+	"github.com/jmoiron/sqlx"
+)
 
-type Storage struct { // TODO
+type Storage struct {
+	config     config.DBConfig
+	db         *sqlx.DB
+	eventsRepo storage.EventDao
 }
 
-func New() *Storage {
-	return &Storage{}
+func New(config config.DBConfig) *Storage {
+	return &Storage{
+		config: config,
+	}
 }
 
-func (s *Storage) Connect(ctx context.Context) error {
-	// TODO
-	return nil
+func (s *Storage) Connect(ctx context.Context) (err error) {
+	s.db, err = sqlx.ConnectContext(ctx, "pgx", s.config.Dsn)
+
+	return
 }
 
-func (s *Storage) Close(ctx context.Context) error {
-	// TODO
-	return nil
+func (s *Storage) Close() error {
+	return s.db.Close()
 }

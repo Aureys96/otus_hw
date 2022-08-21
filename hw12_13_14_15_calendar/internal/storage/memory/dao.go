@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"github.com/Aureys96/hw12_13_14_15_calendar/internal/storage"
-	"time"
 )
 
 func newEventDAO(st *Storage) *StorageDao {
@@ -50,7 +49,7 @@ func (s *StorageDao) Delete(_ context.Context, id int) {
 	delete(s.storage.data, id)
 }
 
-func (s *StorageDao) ListEvents(_ context.Context, date time.Time) []storage.Event {
+func (s *StorageDao) ListEvents(_ context.Context) ([]storage.Event, error) {
 	//TODO implement me
 	panic("implement me")
 }

@@ -2,7 +2,6 @@ package storage
 
 import (
 	"context"
-	"time"
 )
 
 type IStorage interface {
@@ -16,5 +15,5 @@ type EventDao interface {
 	Get(ctx context.Context, id int) (Event, error)
 	Update(ctx context.Context, id int, event Event) error
 	Delete(ctx context.Context, id int)
-	ListEvents(ctx context.Context, date time.Time) []Event
+	ListEvents(ctx context.Context) ([]Event, error)
 }

@@ -8,7 +8,6 @@ import (
 	"github.com/justinas/alice"
 	"go.uber.org/zap"
 	"net/http"
-	"time"
 )
 
 type Server struct {
@@ -22,8 +21,8 @@ type Application interface {
 	CreateEvent(ctx context.Context, event storage.Event) error
 	Get(ctx context.Context, id int) (storage.Event, error)
 	Update(ctx context.Context, id int, event storage.Event) error
-	Delete(ctx context.Context, id int) error
-	ListEvents(ctx context.Context, date time.Time) []storage.Event
+	Delete(ctx context.Context, id int)
+	ListEvents(ctx context.Context) ([]storage.Event, error)
 }
 
 func NewServer(logger *zap.Logger, app Application, config config.ServerConfig) *Server {
