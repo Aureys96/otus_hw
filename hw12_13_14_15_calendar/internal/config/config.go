@@ -2,6 +2,7 @@ package config
 
 import (
 	"github.com/Aureys96/hw12_13_14_15_calendar/internal/server/config"
+	storageConfig "github.com/Aureys96/hw12_13_14_15_calendar/internal/storage/config"
 	"github.com/knadh/koanf"
 	"github.com/knadh/koanf/parsers/toml"
 	"github.com/knadh/koanf/providers/confmap"
@@ -12,8 +13,10 @@ import (
 // Организация конфига в main принуждает нас сужать API компонентов, использовать
 // при их конструировании только необходимые параметры, а также уменьшает вероятность циклической зависимости.
 type Config struct {
-	Logger LoggerConf
-	Server config.ServerConfig `koanf:"server"`
+	Logger   LoggerConf
+	Server   config.ServerConfig `koanf:"server"`
+	Inmemory bool
+	DbConfig storageConfig.DBConfig
 	// TODO
 }
 

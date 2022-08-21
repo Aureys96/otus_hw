@@ -3,12 +3,15 @@ package main
 import (
 	"context"
 	"flag"
-	config "github.com/Aureys96/hw12_13_14_15_calendar/internal/config"
 	"log"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
+
+	config "github.com/Aureys96/hw12_13_14_15_calendar/internal/config"
+	storage "github.com/Aureys96/hw12_13_14_15_calendar/internal/storage"
+	sqlstorage "github.com/Aureys96/hw12_13_14_15_calendar/internal/storage/sql"
 
 	"github.com/Aureys96/hw12_13_14_15_calendar/internal/app"
 	"github.com/Aureys96/hw12_13_14_15_calendar/internal/logger"
@@ -19,14 +22,14 @@ import (
 var configFile string
 
 func init() {
-	flag.StringVar(&configFile, "config", "C:\\Users\\Константин\\GolandProjects\\otus_hw\\hw12_13_14_15_calendar\\configs\\config.toml", "Path to configuration file")
+	flag.StringVar(&configFile, "config", "/configs/config.toml", "Path to configuration file")
 }
 
 func main() {
 	flag.Parse()
 
 	if flag.Arg(0) == "version" {
-		//printVersion()
+		printVersion()
 		return
 	}
 
@@ -36,7 +39,13 @@ func main() {
 	}
 	logg := logger.New(cfg)
 	logg.Info("Everything is fine")
-	storage := memorystorage.New()
+	var storage storage.IStorage
+	if cfg.Inmemory {
+		storage = memorystorage.New()
+	} else {
+		storage = sqlstorage.New(cfg.DbConfig)
+	}
+
 	calendar := app.New(logg, storage)
 
 	server := internalhttp.NewServer(logg, calendar, cfg.Server)

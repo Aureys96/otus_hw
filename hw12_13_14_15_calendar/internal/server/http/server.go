@@ -3,11 +3,13 @@ package internalhttp
 import (
 	"context"
 	"fmt"
+	"net/http"
+	"time"
+
 	"github.com/Aureys96/hw12_13_14_15_calendar/internal/server/config"
 	"github.com/Aureys96/hw12_13_14_15_calendar/internal/storage"
 	"github.com/justinas/alice"
 	"go.uber.org/zap"
-	"net/http"
 )
 
 type Server struct {
@@ -22,7 +24,7 @@ type Application interface {
 	Get(ctx context.Context, id int) (storage.Event, error)
 	Update(ctx context.Context, id int, event storage.Event) error
 	Delete(ctx context.Context, id int)
-	ListEvents(ctx context.Context) ([]storage.Event, error)
+	ListEvents(ctx context.Context, start, end time.Time) ([]storage.Event, error)
 }
 
 func NewServer(logger *zap.Logger, app Application, config config.ServerConfig) *Server {

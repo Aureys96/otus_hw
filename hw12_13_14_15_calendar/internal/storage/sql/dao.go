@@ -4,6 +4,8 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"time"
+
 	"github.com/Aureys96/hw12_13_14_15_calendar/internal/storage"
 )
 
@@ -16,9 +18,14 @@ func newEventDAO(s *Storage) storage.EventDao {
 }
 
 func (sd *StorageDao) CreateEvent(ctx context.Context, ev storage.Event) (storage.Event, error) {
-	res, err := sd.s.db.NamedExecContext(ctx, "insert into events (title) values (:title) returning id",
+	res, err := sd.s.db.NamedExecContext(ctx,
+		`insert into events (title, start_at, end_at, user_id) 
+                  values (:title, :start_at, :end_at, :uid) returning id`,
 		map[string]interface{}{
-			"title": ev.Title,
+			"title":    ev.Title,
+			"start_at": ev.StartTime,
+			"end_at":   ev.StartTime.Add(ev.Duration),
+			"uid":      ev.UserID,
 		})
 	if err != nil {
 		return storage.Event{}, err
@@ -39,7 +46,7 @@ func (sd *StorageDao) Get(ctx context.Context, id int) (storage.Event, error) {
 	err := sd.s.db.GetContext(ctx, &event, "select * from events where id = $1", id)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return storage.Event{}, errors.New("not found")
+			return storage.Event{}, storage.ErrNotFound
 		}
 		return storage.Event{}, err
 	}
@@ -47,10 +54,13 @@ func (sd *StorageDao) Get(ctx context.Context, id int) (storage.Event, error) {
 }
 
 func (sd *StorageDao) Update(ctx context.Context, id int, event storage.Event) error {
-	_, err := sd.s.db.NamedQueryContext(ctx, "update events set title = :title where id = :id",
+	_, err := sd.s.db.NamedQueryContext(ctx,
+		"update events set title = :title, start_at = :start_at, end_at = :end_at where id = :id",
 		map[string]interface{}{
-			"id":    id,
-			"title": event.Title,
+			"id":       id,
+			"title":    event.Title,
+			"start_at": event.StartTime,
+			"end_at":   event.StartTime.Add(event.Duration),
 		})
 	return err
 }
@@ -59,9 +69,9 @@ func (sd *StorageDao) Delete(ctx context.Context, id int) {
 	sd.s.db.QueryRowxContext(ctx, "delete from events where id = $1", id)
 }
 
-func (sd *StorageDao) ListEvents(ctx context.Context) ([]storage.Event, error) {
+func (sd *StorageDao) ListEvents(ctx context.Context, start, end time.Time) ([]storage.Event, error) {
 	var events []storage.Event
-	err := sd.s.db.SelectContext(ctx, &events, "select * from events")
+	err := sd.s.db.SelectContext(ctx, &events, "select * from events where start_at > $1 and start_at < $2", start, end)
 	if err != nil {
 		return nil, err
 	}

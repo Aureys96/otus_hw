@@ -2,8 +2,9 @@ package memorystorage
 
 import (
 	"context"
-	"github.com/Aureys96/hw12_13_14_15_calendar/internal/storage"
 	"sync"
+
+	"github.com/Aureys96/hw12_13_14_15_calendar/internal/storage"
 )
 
 type Storage struct {
