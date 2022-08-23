@@ -7,17 +7,25 @@ import (
 	"github.com/Aureys96/hw12_13_14_15_calendar/internal/storage"
 )
 
-func newEventDAO(st *Storage) *StorageDao {
-	return &StorageDao{st}
-}
-
 type StorageDao struct {
 	storage *Storage
+}
+
+func newEventDAO(st *Storage) *StorageDao {
+	return &StorageDao{st}
 }
 
 func (s *StorageDao) CreateEvent(_ context.Context, event storage.Event) (storage.Event, error) {
 	s.storage.mu.Lock()
 	defer s.storage.mu.Unlock()
+
+	for _, ev := range s.storage.data {
+		if ev.StartTime.UnixNano() < event.StartTime.UnixNano() &&
+			ev.StartTime.Add(ev.Duration).UnixNano() > event.StartTime.UnixNano() {
+			return storage.Event{}, storage.ErrEventBooked
+		}
+	}
+
 	s.storage.data[event.ID] = event
 	return event, nil
 }

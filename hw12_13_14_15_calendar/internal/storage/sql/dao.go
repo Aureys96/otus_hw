@@ -18,6 +18,10 @@ func newEventDAO(s *Storage) storage.EventDao {
 }
 
 func (sd *StorageDao) CreateEvent(ctx context.Context, ev storage.Event) (storage.Event, error) {
+	if err := checkIfAlreadyBooked(ctx, sd, ev); err != nil {
+		return storage.Event{}, err
+	}
+
 	res, err := sd.s.db.NamedExecContext(ctx,
 		`insert into events (title, start_at, end_at, user_id) 
                   values (:title, :start_at, :end_at, :uid) returning id`,
@@ -39,6 +43,18 @@ func (sd *StorageDao) CreateEvent(ctx context.Context, ev storage.Event) (storag
 	ev.ID = int(id)
 
 	return ev, nil
+}
+
+func checkIfAlreadyBooked(ctx context.Context, sd *StorageDao, ev storage.Event) error {
+	var bookedEvents int
+	err := sd.s.db.GetContext(ctx, &bookedEvents, "select count(*) from events where start_at < $1 and end_at > $1", ev.StartTime)
+	if err != nil {
+		return err
+	}
+	if bookedEvents > 0 {
+		return storage.ErrEventBooked
+	}
+	return nil
 }
 
 func (sd *StorageDao) Get(ctx context.Context, id int) (storage.Event, error) {
