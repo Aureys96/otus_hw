@@ -86,4 +86,25 @@ func TestStorage(t *testing.T) {
 		st.DAO().Delete(context.Background(), 0)
 		assert.Equal(t, 0, len(st.data))
 	})
+
+	t.Run("booked error", func(t *testing.T) {
+		st := New()
+		baseDate := time.Date(2022, 8, 23, 10, 10, 10, 10, time.UTC)
+		st.DAO().CreateEvent(context.Background(), storage.Event{
+			ID:        0,
+			Title:     "New event",
+			StartTime: baseDate,
+			Duration:  100,
+			UserID:    1,
+		})
+		_, err := st.DAO().CreateEvent(context.Background(), storage.Event{
+			ID:        0,
+			Title:     "New event",
+			StartTime: baseDate.Add(10),
+			Duration:  10,
+			UserID:    1,
+		})
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, storage.ErrEventBooked)
+	})
 }
