@@ -22,14 +22,14 @@ import (
 var configFile string
 
 func init() {
-	flag.StringVar(&configFile, "config", "/configs/config.toml", "Path to configuration file")
+	flag.StringVar(&configFile, "config", "C:\\Users\\Константин\\GolandProjects\\otus_hw\\hw12_13_14_15_calendar\\configs\\config.toml", "Path to configuration file")
 }
 
 func main() {
 	flag.Parse()
 
 	if flag.Arg(0) == "version" {
-		printVersion()
+		//printVersion()
 		return
 	}
 
@@ -40,7 +40,7 @@ func main() {
 	logg := logger.New(cfg)
 	logg.Info("Everything is fine")
 	var storage storage.IStorage
-	if cfg.Inmemory {
+	if cfg.DbConfig.Inmemory {
 		storage = memorystorage.New()
 	} else {
 		storage = sqlstorage.New(cfg.DbConfig)

@@ -1,6 +1,8 @@
-inmemory = "true"
 [logger]
 level = "INFO"
 encoding = "json"
 outputPaths = ["stdout"]
 errorOutputPaths = ["stderr"]
+
+[storage]
+inmemory = true

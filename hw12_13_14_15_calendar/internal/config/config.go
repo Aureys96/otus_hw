@@ -9,15 +9,11 @@ import (
 	"github.com/knadh/koanf/providers/file"
 )
 
-// При желании конфигурацию можно вынести в internal/config.
-// Организация конфига в main принуждает нас сужать API компонентов, использовать
-// при их конструировании только необходимые параметры, а также уменьшает вероятность циклической зависимости.
 type Config struct {
-	Logger   LoggerConf
-	Server   config.ServerConfig `koanf:"server"`
-	Inmemory bool
-	DbConfig storageConfig.DBConfig
-	// TODO
+	Logger     LoggerConf             `koanf:"logger"`
+	Server     config.ServerConfig    `koanf:"server"`
+	DbConfig   storageConfig.DBConfig `koanf:"storage"`
+	Production bool                   `koanf:"production"`
 }
 
 type LoggerConf struct {
@@ -31,9 +27,15 @@ func NewConfig(configPath string) (*Config, error) {
 	k := koanf.New(".")
 
 	k.Load(confmap.Provider(map[string]interface{}{
-		"server.host":         "localhost",
-		"server.port":         "8080",
-		"server.shutdownTime": "5",
+		"logger.level":            "INFO",
+		"logger.encoding":         "json",
+		"logger.outputPaths":      []string{"stdout"},
+		"logger.errorOutputPaths": []string{"stderr"},
+		"server.host":             "localhost",
+		"server.port":             "8080",
+		"server.shutdownTime":     "5",
+		"storage.inmemory":        true,
+		"production":              false,
 	}, "."), nil)
 	if err := k.Load(file.Provider(configPath), toml.Parser()); err != nil {
 		return nil, err
@@ -46,5 +48,3 @@ func NewConfig(configPath string) (*Config, error) {
 
 	return &config, nil
 }
-
-// TODO
