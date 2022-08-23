@@ -38,15 +38,15 @@ func main() {
 		log.Fatalln("Error while reading cfg file", err)
 	}
 	logg := logger.New(cfg)
-	logg.Info("Everything is fine")
-	var storage storage.IStorage
+
+	var store storage.IStorage
 	if cfg.DbConfig.Inmemory {
-		storage = memorystorage.New()
+		store = memorystorage.New()
 	} else {
-		storage = sqlstorage.New(cfg.DbConfig)
+		store = sqlstorage.New(cfg.DbConfig)
 	}
 
-	calendar := app.New(logg, storage)
+	calendar := app.New(logg, store)
 
 	server := internalhttp.NewServer(logg, calendar, cfg.Server)
 

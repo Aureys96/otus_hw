@@ -6,8 +6,13 @@ import (
 )
 
 func New(appConfig *config.Config) *zap.Logger {
-	// var cfg zap.ServerConfig //TODO add more profiles
-	cfg := zap.NewDevelopmentConfig()
+	var cfg zap.Config
+
+	if appConfig.Production {
+		cfg = zap.NewProductionConfig()
+	} else {
+		cfg = zap.NewDevelopmentConfig()
+	}
 
 	al := zap.NewAtomicLevel()
 	err := al.UnmarshalText([]byte(appConfig.Logger.Level))
