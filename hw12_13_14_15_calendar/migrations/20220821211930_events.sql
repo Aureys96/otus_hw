@@ -1,5 +1,9 @@
+CREATE SEQUENCE events_id_sequence
+    START 1
+    INCREMENT 1;
+
 create table events (
-    id serial primary key,
+    id BIGINT NOT NULL PRIMARY KEY DEFAULT nextval('events_id_sequence'),
     title varchar(256) not null,
     start_at timestamp,
     end_at timestamp,
