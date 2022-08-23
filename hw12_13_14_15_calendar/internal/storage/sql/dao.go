@@ -47,7 +47,8 @@ func (sd *StorageDao) CreateEvent(ctx context.Context, ev storage.Event) (storag
 
 func checkIfAlreadyBooked(ctx context.Context, sd *StorageDao, ev storage.Event) error {
 	var bookedEvents int
-	err := sd.s.db.GetContext(ctx, &bookedEvents, "select count(*) from events where start_at < $1 and end_at > $1", ev.StartTime)
+	err := sd.s.db.GetContext(ctx, &bookedEvents,
+		"select count(*) from events where start_at < $1 and end_at > $1", ev.StartTime)
 	if err != nil {
 		return err
 	}
@@ -70,7 +71,7 @@ func (sd *StorageDao) Get(ctx context.Context, id int) (storage.Event, error) {
 }
 
 func (sd *StorageDao) Update(ctx context.Context, id int, event storage.Event) error {
-	_, err := sd.s.db.NamedQueryContext(ctx,
+	row, err := sd.s.db.NamedQueryContext(ctx,
 		"update events set title = :title, start_at = :start_at, end_at = :end_at where id = :id",
 		map[string]interface{}{
 			"id":       id,
@@ -78,6 +79,7 @@ func (sd *StorageDao) Update(ctx context.Context, id int, event storage.Event) e
 			"start_at": event.StartTime,
 			"end_at":   event.StartTime.Add(event.Duration),
 		})
+	defer row.Close() //nolint
 	return err
 }
 

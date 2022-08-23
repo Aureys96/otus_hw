@@ -12,14 +12,14 @@ import (
 type Config struct {
 	Logger     LoggerConf             `koanf:"logger"`
 	Server     config.ServerConfig    `koanf:"server"`
-	DbConfig   storageConfig.DBConfig `koanf:"storage"`
+	DBConfig   storageConfig.DBConfig `koanf:"storage"`
 	Production bool                   `koanf:"production"`
 }
 
 type LoggerConf struct {
 	Level            string
 	Encoding         string
-	outputPaths      string
+	outputPaths      string //nolint
 	ErrorOutputPaths []string
 }
 

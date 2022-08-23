@@ -9,7 +9,7 @@ import (
 	"syscall"
 	"time"
 
-	config "github.com/Aureys96/hw12_13_14_15_calendar/internal/config"
+	config "github.com/Aureys96/hw12_13_14_15_calendar/internal/config" //nolint
 	storage "github.com/Aureys96/hw12_13_14_15_calendar/internal/storage"
 	sqlstorage "github.com/Aureys96/hw12_13_14_15_calendar/internal/storage/sql"
 
@@ -22,14 +22,14 @@ import (
 var configFile string
 
 func init() {
-	flag.StringVar(&configFile, "config", "C:\\Users\\Константин\\GolandProjects\\otus_hw\\hw12_13_14_15_calendar\\configs\\config.toml", "Path to configuration file")
+	flag.StringVar(&configFile, "config", "/configs/config.toml", "Path to configuration file")
 }
 
 func main() {
 	flag.Parse()
 
 	if flag.Arg(0) == "version" {
-		//printVersion()
+		printVersion()
 		return
 	}
 
@@ -40,10 +40,10 @@ func main() {
 	logg := logger.New(cfg)
 
 	var store storage.IStorage
-	if cfg.DbConfig.Inmemory {
+	if cfg.DBConfig.Inmemory {
 		store = memorystorage.New()
 	} else {
-		store = sqlstorage.New(cfg.DbConfig)
+		store = sqlstorage.New(cfg.DBConfig)
 	}
 
 	calendar := app.New(logg, store)

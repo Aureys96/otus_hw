@@ -43,10 +43,10 @@ func (s *StorageDao) Update(_ context.Context, id int, event storage.Event) erro
 	s.storage.mu.Lock()
 	defer s.storage.mu.Unlock()
 
-	_, ok := s.storage.data[id]
-	if !ok {
+	if _, ok := s.storage.data[id]; !ok {
 		return storage.ErrNotFound
 	}
+
 	s.storage.data[id] = event
 	return nil
 }
@@ -62,9 +62,9 @@ func (s *StorageDao) ListEvents(_ context.Context, start, end time.Time) ([]stor
 	s.storage.mu.Lock()
 	defer s.storage.mu.Unlock()
 	events := make([]storage.Event, len(s.storage.data))
-	for _, event := range s.storage.data {
+	for i, event := range s.storage.data {
 		if event.StartTime.After(start) && event.StartTime.Add(event.Duration).Before(end) {
-			events = append(events, event)
+			events[i] = event
 		}
 	}
 	return events, nil

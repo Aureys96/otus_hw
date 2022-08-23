@@ -1,6 +1,8 @@
 package logger
 
 import (
+	"log"
+
 	"github.com/Aureys96/hw12_13_14_15_calendar/internal/config"
 	"go.uber.org/zap"
 )
@@ -15,12 +17,15 @@ func New(appConfig *config.Config) *zap.Logger {
 	}
 
 	al := zap.NewAtomicLevel()
-	err := al.UnmarshalText([]byte(appConfig.Logger.Level))
+	if err := al.UnmarshalText([]byte(appConfig.Logger.Level)); err != nil {
+		log.Fatalln("Error while unmarshalling config", err)
+	}
+
 	cfg.Level.SetLevel(al.Level())
 
 	logger, err := cfg.Build()
 	if err != nil {
-		panic(err)
+		log.Fatalln("Error while building logger", err)
 	}
 	defer logger.Sync()
 
