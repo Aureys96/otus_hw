@@ -1,14 +1,33 @@
 package memorystorage
 
-import "sync"
+import (
+	"context"
+	"sync"
+
+	"github.com/Aureys96/hw12_13_14_15_calendar/internal/storage"
+)
 
 type Storage struct {
-	// TODO
-	mu sync.RWMutex
+	mu   sync.RWMutex
+	data map[int]storage.Event
+	dao  storage.EventDao
+}
+
+func (s *Storage) Connect(_ context.Context) error {
+	panic("unsupported")
+}
+
+func (s *Storage) Close() error {
+	panic("unsupported")
 }
 
 func New() *Storage {
-	return &Storage{}
+	return &Storage{data: make(map[int]storage.Event)}
 }
 
-// TODO
+func (s *Storage) DAO() storage.EventDao {
+	if s.dao == nil {
+		s.dao = newEventDAO(s)
+	}
+	return s.dao
+}

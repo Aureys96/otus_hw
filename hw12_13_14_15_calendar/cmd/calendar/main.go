@@ -3,10 +3,15 @@ package main
 import (
 	"context"
 	"flag"
+	"log"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
+
+	config "github.com/Aureys96/hw12_13_14_15_calendar/internal/config" //nolint
+	storage "github.com/Aureys96/hw12_13_14_15_calendar/internal/storage"
+	sqlstorage "github.com/Aureys96/hw12_13_14_15_calendar/internal/storage/sql"
 
 	"github.com/Aureys96/hw12_13_14_15_calendar/internal/app"
 	"github.com/Aureys96/hw12_13_14_15_calendar/internal/logger"
@@ -17,7 +22,7 @@ import (
 var configFile string
 
 func init() {
-	flag.StringVar(&configFile, "config", "/etc/calendar/config.toml", "Path to configuration file")
+	flag.StringVar(&configFile, "config", "/configs/config.toml", "Path to configuration file")
 }
 
 func main() {
@@ -28,13 +33,22 @@ func main() {
 		return
 	}
 
-	config := NewConfig()
-	logg := logger.New(config.Logger.Level)
+	cfg, err := config.NewConfig(configFile)
+	if err != nil {
+		log.Fatalln("Error while reading cfg file", err)
+	}
+	logg := logger.New(cfg)
 
-	storage := memorystorage.New()
-	calendar := app.New(logg, storage)
+	var store storage.IStorage
+	if cfg.DBConfig.Inmemory {
+		store = memorystorage.New()
+	} else {
+		store = sqlstorage.New(cfg.DBConfig)
+	}
 
-	server := internalhttp.NewServer(logg, calendar)
+	calendar := app.New(logg, store)
+
+	server := internalhttp.NewServer(logg, calendar, cfg.Server)
 
 	ctx, cancel := signal.NotifyContext(context.Background(),
 		syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
@@ -53,9 +67,7 @@ func main() {
 
 	logg.Info("calendar is running...")
 
-	if err := server.Start(ctx); err != nil {
-		logg.Error("failed to start http server: " + err.Error())
-		cancel()
+	if err := server.Start(); err != nil {
 		os.Exit(1) //nolint:gocritic
 	}
 }

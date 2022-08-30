@@ -1,5 +1,8 @@
 [logger]
 level = "INFO"
+encoding = "json"
+outputPaths = ["stdout"]
+errorOutputPaths = ["stderr"]
 
-# TODO
-# ...
+[storage]
+inmemory = true

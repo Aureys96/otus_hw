@@ -2,25 +2,38 @@ package app
 
 import (
 	"context"
+	"time"
+
+	"github.com/Aureys96/hw12_13_14_15_calendar/internal/storage"
+	"go.uber.org/zap"
 )
 
-type App struct { // TODO
+type App struct {
+	storage storage.IStorage
+	logger  *zap.Logger
 }
 
-type Logger interface { // TODO
+func New(logger *zap.Logger, storage storage.IStorage) *App {
+	return &App{storage, logger}
 }
 
-type Storage interface { // TODO
+func (a App) CreateEvent(ctx context.Context, event storage.Event) error {
+	_, err := a.storage.DAO().CreateEvent(ctx, event)
+	return err
 }
 
-func New(logger Logger, storage Storage) *App {
-	return &App{}
+func (a App) Get(ctx context.Context, id int) (storage.Event, error) {
+	return a.storage.DAO().Get(ctx, id)
 }
 
-func (a *App) CreateEvent(ctx context.Context, id, title string) error {
-	// TODO
-	return nil
-	// return a.storage.CreateEvent(storage.Event{ID: id, Title: title})
+func (a App) Update(ctx context.Context, id int, event storage.Event) error {
+	return a.storage.DAO().Update(ctx, id, event)
 }
 
-// TODO
+func (a App) Delete(ctx context.Context, id int) {
+	a.storage.DAO().Delete(ctx, id)
+}
+
+func (a App) ListEvents(ctx context.Context, start, end time.Time) ([]storage.Event, error) {
+	return a.storage.DAO().ListEvents(ctx, start, end)
+}
