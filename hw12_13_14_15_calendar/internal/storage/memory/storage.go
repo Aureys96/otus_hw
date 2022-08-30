@@ -14,11 +14,11 @@ type Storage struct {
 }
 
 func (s *Storage) Connect(_ context.Context) error {
-	panic("unsupported")
+	return nil
 }
 
 func (s *Storage) Close() error {
-	panic("unsupported")
+	return nil
 }
 
 func New() *Storage {
