@@ -8,5 +8,8 @@ require (
 	github.com/jackc/pgx/v4 v4.17.0
 	github.com/jmoiron/sqlx v1.3.0
 	github.com/justinas/alice v1.2.0
+	github.com/stretchr/testify v1.8.0
 	go.uber.org/zap v1.15.0
+	google.golang.org/grpc v1.49.0
+	google.golang.org/protobuf v1.28.1
 )
